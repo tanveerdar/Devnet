@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <extensions>
+        <entry key="lxc.host.tcp_port" type="String">30699</entry>
+        <entry key="management_lxc" type="Boolean">false</entry>
+        <entry key="management_network" type="String">flat</entry>
+    </extensions>
+    <node name="NX-OS-01" type="SIMPLE" subtype="NX-OSv" location="181,363" ipv4="192.168.0.2">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="string">! NX-OSv Config generated on 2015-04-24 13:18
+! by autonetkit_0.15.1
+!
+version 6.2(1)
+license grace-period
+!
+hostname nx-osv-1
+vdc nx-osv-1 id 1
+  allocate interface Ethernet2/1-48
+  allocate interface Ethernet3/1-48
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 768
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+
+feature ospf
+feature bgp
+
+username adminbackup password 5 ! role network-operator
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51 role network-admin
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1 role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00 role network-admin
+no password strength-check
+ip domain-lookup
+copp profile strict
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x55b3c64a53fb95518e75358ee75e82e9 priv 0x55b3c64a53fb95518e75358ee75e82e9 localizedkey
+snmp-server user cisco network-admin
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+
+vlan 1
+
+vrf context management
+hardware forwarding unicast trace
+
+interface Loopback0
+  description Loopback
+  ip address 192.168.0.4/32
+  ip router ospf 1 area 0
+
+interface Ethernet2/1
+  description to asav-1
+  ip address 10.0.0.10/30
+  ip router ospf 1 area 0
+  no mac-address
+  no shutdown
+
+interface Ethernet2/2
+  description to iosvl2-1
+  ip address 10.0.0.2/29
+  ip router ospf 1 area 0
+  no mac-address
+  no shutdown
+
+interface mgmt0
+  description OOB Management
+  ! Configured on launch
+  no ip address
+  no mac-address
+  no shutdown
+  vrf member management
+
+
+line console
+line vty
+router ospf 1
+  router-id 192.168.0.4
+router bgp 1
+  router-id 192.168.0.4
+  address-family ipv4 unicast
+    network 192.168.0.4/32
+  !
+! iBGP
+!
+! iBGP peers
+  !
+  neighbor 192.168.0.5 remote-as 1
+    description iBGP peer csr1000v-1
+    update-source Loopback0
+    address-family ipv4 unicast
+    !
+    !
+  !
+  neighbor 192.168.0.1 remote-as 1
+    description iBGP peer iosv-1
+    update-source Loopback0
+    address-family ipv4 unicast
+    !
+    !
+  !
+  neighbor 192.168.0.3 remote-as 1
+    description iBGP peer iosxrv-1
+    update-source Loopback0
+    address-family ipv4 unicast
+    !
+    !
+        </entry>
+        </extensions>
+        <interface id="0" name="Ethernet2/1" ipv4="10.0.0.10" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet2/2"/>
+        <interface id="2" name="Ethernet2/3"/>
+    </node>
+    <node name="CSR-1Kv-01" type="SIMPLE" subtype="CSR1000v" location="379,360" ipv4="192.168.0.3">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="string">! IOS Config generated on 2015-04-24 13:18
+! by autonetkit_0.15.1
+!
+hostname csr1000v-1
+boot-start-marker
+boot-end-marker
+!
+license accept end user agreement
+license boot level premium
+!
+!
+no aaa new-model
+!
+!
+ipv6 unicast-routing
+!
+!
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+no service config
+enable password cisco
+enable secret 4 tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY
+ip classless
+ip subnet-zero
+no ip domain lookup
+line vty 0 4
+ transport input ssh telnet
+ exec-timeout 720 0
+ password cisco
+ login
+line con 0
+ password cisco
+!
+no cdp run
+!
+!
+interface Loopback0
+  description Loopback
+  ip address 192.168.0.5 255.255.255.255
+!
+interface GigabitEthernet1
+  description OOB Management
+  ! Configured on launch
+  no ip address
+  no shutdown
+!
+interface GigabitEthernet2
+  description to iosxrv-1
+  ip address 10.0.128.6 255.255.255.252
+  ip ospf cost 1
+  no shutdown
+!
+interface GigabitEthernet3
+  description to iosvl2-1
+  ip address 10.0.0.3 255.255.255.248
+  ip ospf cost 1
+  no shutdown
+!
+!
+!
+router ospf 1
+  network 192.168.0.5 0.0.0.0 area 0
+  log-adjacency-changes
+  passive-interface Loopback0
+  network 10.0.128.4 0.0.0.3 area 0
+  network 10.0.0.0 0.0.0.7 area 0
+!
+!
+router bgp 1
+  bgp router-id 192.168.0.5
+  no synchronization
+! ibgp
+  ! ibgp peers
+  !
+  neighbor 192.168.0.1 remote-as 1
+  neighbor 192.168.0.1 description iBGP peer iosv-1
+  neighbor 192.168.0.1 update-source Loopback0
+  !
+  neighbor 192.168.0.3 remote-as 1
+  neighbor 192.168.0.3 description iBGP peer iosxrv-1
+  neighbor 192.168.0.3 update-source Loopback0
+  !
+  neighbor 192.168.0.4 remote-as 1
+  neighbor 192.168.0.4 description iBGP peer nx-osv-1
+  neighbor 192.168.0.4 update-source Loopback0
+!
+!
+ !
+ address-family ipv4
+  network 192.168.0.5 mask 255.255.255.255
+  neighbor 192.168.0.1 activate
+  neighbor 192.168.0.3 activate
+  neighbor 192.168.0.4 activate
+ exit-address-family
+!
+!
+!
+end
+</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet2"/>
+        <interface id="1" name="GigabitEthernet3"/>
+        <interface id="2" name="GigabitEthernet4"/>
+    </node>
+    <node name="asav-01" type="SIMPLE" subtype="ASAv" location="290,155" ipv4="192.168.0.1">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="string">! ASAv Config generated on 2015-04-24 13:18
+! by autonetkit_0.15.1
+!
+hostname asav-1
+username cisco password cisco privilege 15
+enable password cisco
+passwd cisco
+names
+!
+interface Loopback100
+  description loopback
+  no ip address
+interface GigabitEthernet0/0
+  description to iosv-1
+  nameif outside
+  security-level 0
+  no shutdown
+  ip address 10.0.128.2 255.255.255.252
+interface GigabitEthernet0/1
+  description to nx-osv-1
+  nameif outside-1
+  security-level 0
+  no shutdown
+  ip address 10.0.0.9 255.255.255.252
+interface Management0/0
+  description OOB Management
+  management-only
+  nameif mgmt
+  security-level 100
+  no shutdown
+  ! Configured on launch
+  no ip address
+!
+same-security-traffic permit inter-interface
+logging enable
+logging asdm informational
+user-identity default-domain LOCAL
+aaa authentication ssh console LOCAL
+http server enable
+http 0.0.0.0 0.0.0.0 mgmt
+ssh 0.0.0.0 0.0.0.0 mgmt
+telnet 0.0.0.0 0.0.0.0 mgmt
+http 0.0.0.0 0.0.0.0 outside
+ssh 0.0.0.0 0.0.0.0 outside
+telnet 0.0.0.0 0.0.0.0 outside
+http 0.0.0.0 0.0.0.0 outside-1
+ssh 0.0.0.0 0.0.0.0 outside-1
+telnet 0.0.0.0 0.0.0.0 outside-1
+telnet timeout 15
+console timeout 0
+username cisco password cisco privilege 15
+!
+class-map inspection_default
+ match default-inspection-traffic
+!
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+policy-map global_policy
+ class inspection_default
+  inspect ip-options
+  inspect netbios
+  inspect rtsp
+  inspect sunrpc
+  inspect tftp
+  inspect xdmcp
+  inspect dns preset_dns_map
+  inspect ftp
+  inspect h323 h225
+  inspect h323 ras
+  inspect rsh
+  inspect esmtp
+  inspect sqlnet
+  inspect sip
+  inspect skinny
+  inspect icmp
+  inspect http
+!
+service-policy global_policy global
+no call-home reporting anonymous
+call-home
+ profile CiscoTAC-1
+  no active
+end
+        </entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0"/>
+        <interface id="1" name="GigabitEthernet0/1" ipv4="10.0.0.9" netPrefixLenV4="30"/>
+        <interface id="2" name="GigabitEthernet0/2"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[1]" src="/virl:topology/virl:node[3]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[3]" src="/virl:topology/virl:node[2]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[3]" src="/virl:topology/virl:node[3]/virl:interface[3]"/>
+</topology>
