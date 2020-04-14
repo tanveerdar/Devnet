@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "/Users/tadar/.pyenv/versions/DevAsc/bin/python",
+    "python.formatting.provider": "black"
+}

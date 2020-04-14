@@ -1,2 +1,2 @@
 # Devnet
-DevNet Labs
+DevNet Test Labs
